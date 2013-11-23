@@ -20,10 +20,10 @@ Fitness
 
 
 
-Cooperation Matrix:
-	    Coop:   Defect:
-Coop:   (R,R)    (S,T)
-Defect: (T,S)    (P,P)
+Cooperation Matrix:   
+	    Coop:   Defect:   
+Coop:   (R,R)    (S,T)   
+Defect: (T,S)    (P,P)   
 
 For prisoner's dilemma,
 	T > R > P > S
