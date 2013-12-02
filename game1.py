@@ -18,14 +18,22 @@ options = {'num_survivors':2,
 	       'reward_matrix':reward_matrix
 	       }
 
-generations = 100
+plot_options = {'rows':3,
+	            'cols':2,
+	            'figsize':(12, 9.5),
+	            'facecolor':'0.75' # gray
+	           }	     
 
-results = gagame.run(generations, options)
 
+generations_array = [20, 50, 100]
 plots = []
-plots.append(gagame.fittestPlot(results))
-plots.append(gagame.cheatsPlot(results))
 
+for g in generations_array:
+	print 'Running ' + str(g) + ' generations...'
+	results = gagame.run(g, options)
+	plots.append(gagame.fittestPlot(results))
+	plots.append(gagame.cheatsPlot(results))
 
-gagame.plotFigs(plots)
+gagame.plotFigs(plots, plot_options)
+
 

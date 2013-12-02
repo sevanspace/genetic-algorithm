@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import random
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 '''
 reward_matrix:
@@ -119,8 +120,9 @@ def randomCouple(survivors):
                            
 '''
 # run the game with given number of generations and dictionary of settings
-def run(generations, options):
-	# INITIALIZE:
+def run(generations, options=None):
+	if options is None:	options = {}
+
 	# save results
 	results = []
 
@@ -206,21 +208,29 @@ def _makePlot(results, title, ylabel, y_function):
 	return {'title':title,
 	        'xlabel':'Generation',
 	        'x':range(len(results)),
-	        'ylabel':ylabel,
+	        'ylabel':'Cheat Bits', # ylabel,
 	        'y':y }
 
 # takes array of plot data, and plots all as a column of subplots in a figure
-def plotFigs(plots):
-	fig = plt.figure()
-	rows = len(plots)
-	for i in range(rows):
-		ax = fig.add_subplot(rows, 1, i)
+def plotFigs(plots, options=None):
+	if options is None: options = {}
+
+	rows = options.get('rows') or len(plots)
+	cols = options.get('cols') or 1
+	figsize = options.get('figsize') or (9,9)
+	facecolor = options.get('facecolor') or 'w'
+
+	fig = plt.figure(figsize=figsize, facecolor=facecolor)
+
+	gs = gridspec.GridSpec(rows, cols)
+
+	for i in range(len(plots)):
+		ax = plt.subplot(gs[i])
 		p = plots[i]
 		plt.plot(p.get('x', []), p.get('y', []))
 		plt.title(p.get('title', ""))
 		plt.ylabel(p.get('ylabel', ""))
 		plt.xlabel(p.get('xlabel', ""))
-	plt.tight_layout(1.08)
+
+	gs.tight_layout(fig)
 	plt.show()
-
-
