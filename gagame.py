@@ -2,6 +2,7 @@
 import random
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import numpy
 
 '''
 reward_matrix:
@@ -119,8 +120,15 @@ def randomCouple(survivors):
 |/   \__/ (_______) |/    )_)
                            
 '''
-# run the game with given number of generations and dictionary of settings
-def run(generations, options=None):
+
+# run the game with given number of generations and options
+# repeat for given number of trials
+# return array of results
+def runTrials(trials=1, generations=50, options=None):
+	return [run(generations,options) for i in range(trials)]
+
+# run the game with given number of generations and options
+def run(generations=50, options=None):
 	if options is None:	options = {}
 
 	# save results
@@ -181,24 +189,61 @@ def fittestPlot(results):
 	return _makePlot(results, 'Total Cheat Bits in Fittest Individual for each Generation',
 		      'Cheat Bits in Fittest Individual', _getFitnessPlotY)
 
+# builds plot info from array of results for average fittest individual in each generation
+def avgFittestPlot(results_array):
+	return _makePlot(results_array, 'Avg Total Cheat Bits in Fittest Individuals',
+		       'Cheat Bits', _getAvgFitnessPlotY, generations=len(results_array[0]))
+#	return numpy.mean(numpy.array([fittestPlot(r).get('y') for r in results_array]), axis=0)
+	
 # helper function for generating Y for fittestPlot
 def _getFitnessPlotY(results):
 	global CHEAT_BIT
 	return [r['gene_pool'][r['fitness'].index(max(r['fitness']))].count(CHEAT_BIT) for r in results]
 
-# builds plot info from result data for total cheats in gene pool for each generation
+# helper function returns average fittestPlot Y values
+def _getAvgFitnessPlotY(results_array):
+	return _getAvg(results_array, _getFitnessPlotY)
+
+# builds plot info from result data for total cheats in gene pool in each generation
 def cheatsPlot(results):
 	return _makePlot(results, 'Total Cheat Bits in Gene Pool for each Generation',
 		      'Cheat Bits in Gene Pool', _getCheatsPlotY)
+
+# builds plot info from array of results for total cheats in gene pool in each generation
+def avgCheatsPlot(results_array):
+	return _makePlot(results_array, 'Avg Total Cheat Bits in Gene Pools',
+		       'Cheat Bits', _getAvgCheatsPlotY, generations=len(results_array[0]))
 
 # helper function for generating Y for cheatsPlot
 def _getCheatsPlotY(results):
 	global CHEAT_BIT
 	return [sum(dna.count(CHEAT_BIT) for dna in r['gene_pool']) for r in results]
 
+# helper function returns average cheatsPlot Y values
+def _getAvgCheatsPlotY(results_array):
+	return _getAvg(results_array, _getCheatsPlotY)
+
+def totalFitnessPlot(results):
+	return _makePlot(results, 'Total Fitness of Gene Pool',
+		        'Fitness', _getTotalFitnessPlotY)
+
+def avgTotalFitnessPlot(results_array):
+	return _makePlot(results_array, 'Avg Total Fitness of Gene Pool',
+		        'Fitness', _getAvgTotalFitnessPlotY, generations=len(results_array[0]))
+
+def _getTotalFitnessPlotY(results):
+	return [sum(fitness for fitness in r['fitness']) for r in results]
+
+def _getAvgTotalFitnessPlotY(results_array):
+	return _getAvg(results_array, _getTotalFitnessPlotY)
+
+
+# helper function averages columns of Y values in array of results
+def _getAvg(results_array, y_function):
+	return numpy.mean(numpy.array([y_function(r) for r in results_array]), axis=0)
 
 # helper function generates generational data given a function to run on results to generate y
-def _makePlot(results, title, ylabel, y_function):
+def _makePlot(results, title, ylabel, y_function, generations=None):
 	try:
 		y = y_function(results)
 	except KeyError:
@@ -207,7 +252,7 @@ def _makePlot(results, title, ylabel, y_function):
 
 	return {'title':title,
 	        'xlabel':'Generation',
-	        'x':range(len(results)),
+	        'x': range(generations or len(results)),
 	        'ylabel':'Cheat Bits', # ylabel,
 	        'y':y }
 
