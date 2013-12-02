@@ -16,6 +16,21 @@ r[0][0] = my punishment
 r[1][0] = my temptation
 r[1][1] = my reward
 '''
+# cheat bit, i.e. the bit representation of a cheating action by a player
+CHEAT_BIT = '0'
+
+'''
+ _______       _______    
+(  ____ \     (  ___  )   
+| (    \/     | (   ) |   
+| |           | (___) |   
+| | ____      |  ___  |   
+| | \_  )     | (   ) |   
+| (___) |  _  | )   ( |  _ 
+(_______) (_) |/     \| (_)
+                 
+(Genetic Algorithm)
+'''
 
 # return an array of DNA strands created from survivor/parent DNAs
 def fillGenePool(survivors, size, min_num_mutations, max_num_mutations):
@@ -92,6 +107,17 @@ def randomCouple(survivors):
 	parent2 = s.pop(random.randint(0,(len(s)- 1)))
 	return [parent1, parent2]
 
+'''
+ _______             _       
+(  ____ ) |\     /| ( (    /|
+| (    )| | )   ( | |  \  ( |
+| (____)| | |   | | |   \ | |
+|     __) | |   | | | (\ \) |
+| (\ (    | |   | | | | \   |
+| ) \ \__ | (___) | | )  \  |
+|/   \__/ (_______) |/    )_)
+                           
+'''
 # run the game with given number of generations and dictionary of settings
 def run(generations, options):
 	# INITIALIZE:
@@ -137,24 +163,64 @@ def run(generations, options):
 
 	return results
 
-# graph results
-def plotResults(results):
-	generations = range(len(results))
+'''
+ _______   _______   _______             _     _________  _______ 
+(  ____ ) (  ____ \ (  ____ \ |\     /| ( \    \__   __/ (  ____ \
+| (    )| | (    \/ | (    \/ | )   ( | | (       ) (    | (    \/
+| (____)| | (__     | (_____  | |   | | | |       | |    | (_____ 
+|     __) |  __)    (_____  ) | |   | | | |       | |    (_____  )
+| (\ (    | (             ) | | |   | | | |       | |          ) |
+| ) \ \__ | (____/\ /\____) | | (___) | | (____/\ | |    /\____) |
+|/   \__/ (_______/ \_______) (_______) (_______/ )_(    \_______)
+'''                                                          
+
+# builds plot info from result data for the fittest individual in each generation
+def fittestPlot(results):
+	return _makePlot(results, 'Total Cheat Bits in Fittest Individual for each Generation',
+		      'Cheat Bits in Fittest Individual', _getFitnessPlotY)
+
+# helper function for generating Y for fittestPlot
+def _getFitnessPlotY(results):
+	global CHEAT_BIT
+	return [r['gene_pool'][r['fitness'].index(max(r['fitness']))].count(CHEAT_BIT) for r in results]
+
+# builds plot info from result data for total cheats in gene pool for each generation
+def cheatsPlot(results):
+	return _makePlot(results, 'Total Cheat Bits in Gene Pool for each Generation',
+		      'Cheat Bits in Gene Pool', _getCheatsPlotY)
+
+# helper function for generating Y for cheatsPlot
+def _getCheatsPlotY(results):
+	global CHEAT_BIT
+	return [sum(dna.count(CHEAT_BIT) for dna in r['gene_pool']) for r in results]
 
 
-	c = '0'
-#	cheat_results = [sum(dna.count(c) for dna in result['gene_pool']) for result in results]
-	
-	fittest_results = []
-	for result in results:
-		fittest = result['fitness'].index(max(result['fitness']))
-		fittest_results.append(result['gene_pool'][fittest].count(c))
+# helper function generates generational data given a function to run on results to generate y
+def _makePlot(results, title, ylabel, y_function):
+	try:
+		y = y_function(results)
+	except KeyError:
+		print "Unrecognized result data."
+		return None
 
-	plt.plot(generations, fittest_results)
-	plt.title('Total Cheats in Fittest Individual for each Generation')	
-	plt.ylabel('Cheats in Fittest Individual')
-	plt.xlabel('Generation')
+	return {'title':title,
+	        'xlabel':'Generation',
+	        'x':range(len(results)),
+	        'ylabel':ylabel,
+	        'y':y }
+
+# takes array of plot data, and plots all as a column of subplots in a figure
+def plotFigs(plots):
+	fig = plt.figure()
+	rows = len(plots)
+	for i in range(rows):
+		ax = fig.add_subplot(rows, 1, i)
+		p = plots[i]
+		plt.plot(p.get('x', []), p.get('y', []))
+		plt.title(p.get('title', ""))
+		plt.ylabel(p.get('ylabel', ""))
+		plt.xlabel(p.get('xlabel', ""))
+	plt.tight_layout(1.08)
 	plt.show()
 
-#plotResults(run(1000, {}))
 

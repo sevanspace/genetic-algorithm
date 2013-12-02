@@ -21,4 +21,11 @@ options = {'num_survivors':2,
 generations = 100
 
 results = gagame.run(generations, options)
-gagame.plotResults(results)
+
+plots = []
+plots.append(gagame.fittestPlot(results))
+plots.append(gagame.cheatsPlot(results))
+
+
+gagame.plotFigs(plots)
+
